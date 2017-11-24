@@ -11,6 +11,11 @@ public class CombatListener implements Listener {
 
     public static HashMap<UUID, KDA> combatLogs = new HashMap<>();
 
+    //adds a new player to the hash map
+    public void addPlayerLog(UUID player, KDA newKDA) {
+        combatLogs.put(player, newKDA);
+    }
+
     //Handles kills and deaths of players
     @EventHandler
         public void onPlayerKill(PlayerDeathEvent event) {
@@ -45,8 +50,6 @@ public class CombatListener implements Listener {
 
             }
         }
-
-
     }
 
     //TODO: Listener for Assists

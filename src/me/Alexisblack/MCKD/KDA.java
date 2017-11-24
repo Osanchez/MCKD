@@ -27,6 +27,10 @@ public class KDA {
         recalculateKDA();
     }
 
+    public int getDeaths() {
+        return deaths;
+    }
+
     public int incrementDeaths() {
         return deaths;
     }
