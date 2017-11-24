@@ -1,0 +1,9 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="MCKD:jar">
+    <output-path>$PROJECT_DIR$/out/artifacts/MCKD_jar</output-path>
+    <root id="archive" name="MCKD.jar">
+      <element id="module-output" name="MCKD" />
+      <element id="library" level="project" name="spigot" />
+    </root>
+  </artifact>
+</component>
