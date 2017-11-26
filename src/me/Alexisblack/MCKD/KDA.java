@@ -31,14 +31,11 @@ public class KDA {
         return deaths;
     }
 
-    public int incrementDeaths() {
-        return deaths;
-    }
-
-    public void setDeaths() {
+    public void incrementDeaths() {
         this.deaths += 1;
         recalculateKDA();
     }
+
 
     public int getAssists() {
         return assists;
