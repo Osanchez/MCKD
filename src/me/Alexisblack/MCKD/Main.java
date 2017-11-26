@@ -1,7 +1,4 @@
 package me.Alexisblack.MCKD;
-import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
-import org.bukkit.scoreboard.*;
 import org.bukkit.plugin.java.JavaPlugin;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -14,28 +11,8 @@ import java.util.Properties;
 public class Main extends JavaPlugin {
     public static HashMap<String, KDA> combatLogs;
 
-    private Scoreboard statsBoard;
-    private Objective stats;
-    private Score kills;
-    private Score deaths;
-    private Score assists;
-
     @Override
     public void onEnable() {
-        //initialize the score boardK
-        statsBoard = Bukkit.getServer().getScoreboardManager().getNewScoreboard();
-
-        //Scoreboard configuration
-        stats = statsBoard.registerNewObjective("KDA", "dummy");
-        stats.setDisplayName("KDA");
-        stats.setDisplaySlot(DisplaySlot.SIDEBAR);
-
-        //set scoreboard positions
-        kills = stats.getScore(ChatColor.GREEN + "Kills: ");
-        deaths = stats.getScore(ChatColor.RED + "Deaths: ");
-        assists =  stats.getScore(ChatColor.YELLOW + "Assists: ");
-
-
         //load hash map
         try {
             combatLogs = loadHashMap();
@@ -44,7 +21,7 @@ public class Main extends JavaPlugin {
         }
 
         //register events
-        getServer().getPluginManager().registerEvents(new CombatListener(statsBoard), this);
+        getServer().getPluginManager().registerEvents(new CombatListener(), this);
 
     }
 

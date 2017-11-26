@@ -1,28 +1,24 @@
 package me.Alexisblack.MCKD;
 
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.scoreboard.DisplaySlot;
 import org.bukkit.scoreboard.Objective;
 import org.bukkit.scoreboard.Scoreboard;
 import org.bukkit.event.EventHandler;
 import java.util.Iterator;
 import java.util.Map;
 
-
-
 public class CombatListener implements Listener {
     private Scoreboard statsBoard;
-
-
-    public CombatListener(Scoreboard statsBoardTemplate) {
-        statsBoard = statsBoardTemplate;
-    }
+    private Objective stats;
 
     public void checkHashMap() {
-        //check hashmaps inscase
+        //iterate hash map to view values being added
         Iterator it = Main.combatLogs.entrySet().iterator();
         while (it.hasNext()) {
             Map.Entry pair = (Map.Entry) it.next();
@@ -38,6 +34,14 @@ public class CombatListener implements Listener {
     //display any important information to the player
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent event) {
+
+        //initialize the score board
+        statsBoard = Bukkit.getServer().getScoreboardManager().getNewScoreboard();
+
+        //Scoreboard configuration
+        stats = statsBoard.registerNewObjective("KDA", "dummy");
+        stats.setDisplayName("KDA");
+        stats.setDisplaySlot(DisplaySlot.SIDEBAR);
 
         try {
             //add score board to player
@@ -82,8 +86,6 @@ public class CombatListener implements Listener {
             playerObjective.getScore(ChatColor.YELLOW + "Assists: ").setScore(playerAssists);
             System.out.println("Went into catch statement");
         }
-        //TODO: add default values of 0 to the scoreboard so that its not blank before a player kills player
-        //print the hashmap to view if the information was saved
     }
 
     //Handles kills and deaths of players
