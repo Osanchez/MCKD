@@ -5,7 +5,8 @@ public class KDA {
     private int deaths;
     private int assists;
     public double KDA;
-    //TODO: MR Calculations
+
+    //TODO: MR Calculations ~ Maybe
 
     KDA() {
         kills = 0;

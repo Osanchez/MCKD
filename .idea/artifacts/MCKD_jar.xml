@@ -3,7 +3,6 @@
     <output-path>$PROJECT_DIR$/../Minecraft Server/plugins</output-path>
     <root id="archive" name="MCKD.jar">
       <element id="module-output" name="MCKD" />
-      <element id="extracted-dir" path="$PROJECT_DIR$/../Minecraft Server/spigot.jar" path-in-jar="/" />
     </root>
   </artifact>
 </component>

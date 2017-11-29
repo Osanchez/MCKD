@@ -1,15 +1,20 @@
 package me.Alexisblack.MCKD;
-import org.bukkit.plugin.java.JavaPlugin;
+
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
+import org.bukkit.entity.Player;
+import org.bukkit.plugin.java.JavaPlugin;
+
 
 public class Main extends JavaPlugin {
-    public static HashMap<String, KDA> combatLogs;
+    public static HashMap<String, KDA> combatLogs; //Player UUID, KDA Object
+    public static HashMap<String, ArrayList<Player>> assistLogs; //Damaged Player UUID, PlayerAssists Object
 
     @Override
     public void onEnable() {
@@ -20,6 +25,9 @@ public class Main extends JavaPlugin {
             combatLogs = new HashMap<String, KDA>();
         }
 
+        //initialize assist log
+        assistLogs = new HashMap<String, ArrayList<Player>>();
+
         //register events
         getServer().getPluginManager().registerEvents(new CombatListener(), this);
 
@@ -27,12 +35,7 @@ public class Main extends JavaPlugin {
 
     @Override
     public void onDisable() {
-        //runs then the server stops and disables all plugins
-        try {
-            saveHashMap();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+
     }
 
     private HashMap loadHashMap() throws IOException {

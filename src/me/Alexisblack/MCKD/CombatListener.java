@@ -1,23 +1,24 @@
 package me.Alexisblack.MCKD;
-
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.Map;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.scoreboard.DisplaySlot;
 import org.bukkit.scoreboard.Objective;
 import org.bukkit.scoreboard.Scoreboard;
 import org.bukkit.event.EventHandler;
-import java.util.Iterator;
-import java.util.Map;
 
 public class CombatListener implements Listener {
     private Scoreboard statsBoard;
     private Objective stats;
 
-    public void checkHashMap() {
+    public void checkHashMapKDA() {
         //iterate hash map to view values being added
         Iterator it = Main.combatLogs.entrySet().iterator();
         while (it.hasNext()) {
@@ -30,6 +31,54 @@ public class CombatListener implements Listener {
             it.remove(); // avoids a ConcurrentModificationException
         }
     }
+
+    public void checkHashMapAssists() {
+        //iterate hash map to view values being added
+        Iterator it = Main.assistLogs.entrySet().iterator();
+        while (it.hasNext()) {
+            Map.Entry pair = (Map.Entry) it.next();
+            System.out.println("Killed UUID: " + pair.getKey());
+            ArrayList<Player> assists = (ArrayList<Player>) pair.getValue();
+            int x = 1;
+            for(Player assist: assists) {
+                System.out.println("Assist Player " + x + ": " + assist.getName());
+                x++;
+            }
+            it.remove(); // avoids a ConcurrentModificationException
+        }
+    }
+
+    public void creditPlayerAssists(String killer, String defender) {
+        if(Main.assistLogs.containsKey(defender)) {
+            System.out.println("The assist log contains the killed player.");
+            ArrayList<Player> playerAssists = Main.assistLogs.get(defender);
+            for (Player assistPlayer : playerAssists) {
+                if (!assistPlayer.getUniqueId().toString().equals(killer)) {
+                    String assistPlayerID = assistPlayer.getUniqueId().toString();
+                    if (Main.combatLogs.containsKey(assistPlayerID)) {
+                        KDA playerKDA = Main.combatLogs.get(assistPlayerID);
+                        playerKDA.incrementAssists();
+                        Main.combatLogs.replace(assistPlayerID, playerKDA);
+                    } else {
+                        KDA newPlayerKDA = new KDA();
+                        newPlayerKDA.incrementAssists();
+                        Main.combatLogs.put(assistPlayerID, newPlayerKDA);
+                    }
+                } else {
+                    System.out.println("made sure the killer didn't receive assist credit as well as kill credit.");
+                }
+            }
+        } else {
+            System.out.println("Killer UUID: " + killer);
+            System.out.println("Defender UUID: " + defender);
+            System.out.println("------ The Hash Map ------\n");
+            checkHashMapAssists();
+            System.out.println("The assist log doesn't contain the killed player.");
+        }
+
+    }
+
+
 
     //display any important information to the player
     @EventHandler
@@ -62,7 +111,6 @@ public class CombatListener implements Listener {
             playerObjective.getScore(ChatColor.GREEN + "Kills: ").setScore(playerKills);
             playerObjective.getScore(ChatColor.RED + "Deaths: ").setScore(playerDeaths);
             playerObjective.getScore(ChatColor.YELLOW + "Assists: ").setScore(playerAssists);
-            System.out.println("Went into try statement");
         } catch (NullPointerException e) {
             //add score board to player
             Player joinedPlayer = (Player) event.getPlayer();
@@ -84,7 +132,6 @@ public class CombatListener implements Listener {
             playerObjective.getScore(ChatColor.GREEN + "Kills: ").setScore(playerKills);
             playerObjective.getScore(ChatColor.RED + "Deaths: ").setScore(playerDeaths);
             playerObjective.getScore(ChatColor.YELLOW + "Assists: ").setScore(playerAssists);
-            System.out.println("Went into catch statement");
         }
     }
 
@@ -103,7 +150,9 @@ public class CombatListener implements Listener {
                 String attackerID = attacker.getUniqueId().toString();
                 //attacker
                 if (Main.combatLogs.containsKey(attackerID)) {
-                    System.out.println("hash map contains attacker.");
+                    //credit all players with assists
+                    creditPlayerAssists(attackerID, defenderID);
+                    Main.assistLogs.remove(defenderID);
 
                     //increment kills in hash map
                     KDA attackerKDA = Main.combatLogs.get(attackerID);
@@ -118,7 +167,9 @@ public class CombatListener implements Listener {
                     attackerObjective.getScore(ChatColor.RED + "Deaths: ").setScore(attackerKDA.getDeaths());
                     attackerObjective.getScore(ChatColor.YELLOW + "Assists: ").setScore(attackerKDA.getAssists());
                 } else {
-                    System.out.println("hash map does not contain attacker.");
+                    //credit all players with assists
+                    creditPlayerAssists(attackerID, defenderID);
+                    Main.assistLogs.remove(defenderID);
 
                     //add killer to hash map for the first time
                     KDA newKillerKDA = new KDA();
@@ -135,7 +186,7 @@ public class CombatListener implements Listener {
                 }
                 //defender
                 if (Main.combatLogs.containsKey(defenderID)) {
-                    System.out.println("hash map contains defender.");
+
                     //increment deaths in hashmap
                     KDA defenderKDA = Main.combatLogs.get(defenderID);
                     defenderKDA.incrementDeaths();
@@ -150,14 +201,13 @@ public class CombatListener implements Listener {
                     defenderObjective.getScore(ChatColor.YELLOW + "Assists: ").setScore(defenderKDA.getAssists());
 
                 } else {
-                    System.out.println("hash map does not contain defender.");
 
                     //add defender to hash map for the first time
                     KDA newDefenderKDA = new KDA();
                     newDefenderKDA.incrementKills();
                     Main.combatLogs.put(defenderID, newDefenderKDA);
 
-                    //update scoreboard
+                    //update scoreboardd
                     Scoreboard defenderBoard = defender.getScoreboard();
                     Objective defenderObjective = defenderBoard.getObjective("KDA");
 
@@ -171,5 +221,37 @@ public class CombatListener implements Listener {
         }
     }
 
-    //TODO: Listener for Assists
+    // TODO: update assists, then remove that player from the hash map until he gets damaged again
+
+    @EventHandler
+    public void onPlayerDamaged(EntityDamageByEntityEvent event) {
+        if(event.getEntity() instanceof Player) {
+            Player damagedPlayer = (Player) event.getEntity();
+            String damagedPlayerID = damagedPlayer.getUniqueId().toString();
+            if(event.getDamager() instanceof Player) {
+                Player attacker = (Player) event.getDamager();
+                String attackerID = attacker.getUniqueId().toString();
+                if(Main.assistLogs.containsKey(damagedPlayerID)) {
+                    ArrayList<Player> allAssists = Main.assistLogs.get(damagedPlayerID);
+                    boolean alreadyAssisted = false;
+                    for(int x = 0; x < allAssists.size(); x++) {
+                        String playerAssister = allAssists.get(x).getUniqueId().toString();
+                        if(playerAssister.equals(attackerID)) {
+                            alreadyAssisted = true;
+                        }
+                    }
+                    if(alreadyAssisted == false) {
+                        allAssists.add(attacker);
+                        Main.assistLogs.replace(damagedPlayerID, allAssists);
+                        checkHashMapAssists();
+                    }
+                } else {
+                    ArrayList<Player> newAssistPlayers = new ArrayList<>();
+                    newAssistPlayers.add(attacker);
+                    Main.assistLogs.put(damagedPlayerID, newAssistPlayers);
+                    System.out.println("New Attacker Added to the assist log!");
+                }
+            }
+        }
+    }
 }
